@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GuessWord</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root{
+      --brand-blue: #0b66c3;
+      --brand-green: #6aaa64;
+      --muted: #6b7280;
+      --card-bg: #ffffff;
+      --page-bg: #f7fafc;
+      --max-width: 1100px;
+    }
+    html,body{margin:0;padding:0;height:100%}
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--page-bg);
+      color: #0f172a;
+      line-height:1.45;
+      padding: 18px;
+      -webkit-font-smoothing:antialiased;
+    }
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 6px 12px;
+    }
+
+    header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 0;
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .brand .logo {
+      width:44px;
+      height:44px;
+      border-radius:8px;
+      background: linear-gradient(180deg,var(--brand-blue),#1660a6);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-weight:700;
+      box-shadow: 0 6px 18px rgba(17,24,39,0.06);
+      font-size:18px;
+    }
+    .brand h1 {
+      margin:0;
+      font-size:18px;
+      letter-spacing:0.2px;
+    }
+
+    nav {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:14px;
+    }
+
+    nav a {
+      color:var(--brand-blue);
+      text-decoration:none;
+      padding:6px 8px;
+      border-radius:6px;
+    }
+    nav a:hover { background:rgba(11,102,195,0.06); }
+
+    .user-info {
+      color:var(--muted);
+      margin-left:8px;
+      font-weight:600;
+    }
+
+    hr.site-sep {
+      border:0;
+      border-top:1px solid #e6eef7;
+      margin:12px 0 20px;
+    }
+    .msg-list {
+      background:#ffffff;
+      border:1px solid #e6eef7;
+      padding:10px 14px;
+      border-radius:8px;
+      margin-bottom:16px;
+      box-shadow: 0 6px 18px rgba(17,24,39,0.03);
+    }
+    .msg-list ul { margin:0; padding-left:18px; }
+    .msg-list li { margin:6px 0; color: #0f172a; }
+
+    .tile {
+      display:inline-block;
+      width:44px;
+      height:44px;
+      line-height:44px;
+      text-align:center;
+      margin:4px;
+      font-weight:700;
+      border:2px solid #c7cbd1;
+      border-radius:6px;
+      font-size:18px;
+      box-shadow: 0 3px 6px rgba(15,23,42,0.04);
+    }
+    .green { background: var(--brand-green); color: white; border-color: rgba(0,0,0,0.06); }
+    .orange { background: #c9b458; color: white; border-color: rgba(0,0,0,0.06); }
+    .grey { background: #787c7e; color: white; border-color: rgba(0,0,0,0.06); }
+    .guess-row { margin-bottom:10px; }
+
+    .muted { color:var(--muted); font-size:13px; }
+    .btn {
+      display:inline-block;
+      padding:8px 14px;
+      border-radius:8px;
+      text-decoration:none;
+      background:var(--brand-blue);
+      color:#fff;
+      font-weight:700;
+      border: none;
+      cursor:pointer;
+    }
+    .btn.secondary { background:#f3f7fb; color:var(--brand-blue); border:1px solid #e6eef7; }
+    .btn.ghost { background: transparent; color:var(--brand-blue); border: none; }
+
+    @media (max-width:720px){
+      header { flex-direction:column; align-items:flex-start; gap:8px; }
+      .brand h1 { font-size:16px; }
+      nav { width:100%; gap:8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">GW</div>
+        <h1>GuessWord</h1>
+      </div>
+
+      <nav>
+        {% if user.is_authenticated %}
+          {% if user.is_staff %}
+            <a class="btn secondary" href="{% url 'game:report_day' %}">Daily Report</a>
+            <a class="btn secondary" href="{% url 'game:report_user' %}">User Report</a>
+          {% endif %}
+
+          <span class="muted">Hello, <strong>{{ user.username }}</strong></span>
+          <a href="{% url 'game:dashboard' %}" class="btn ghost">Dashboard</a>
+          <a href="{% url 'game:logout' %}" class="btn">Logout</a>
+        {% else %}
+          <a href="{% url 'game:login' %}" class="btn">Login</a>
+          <a href="{% url 'game:register' %}" class="btn secondary">Register</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <hr class="site-sep">
+
+    <main>
+      {% if messages %}
+        <div class="msg-list" role="status" aria-live="polite">
+          <ul>
+            {% for m in messages %}
+              <li>{{ m }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

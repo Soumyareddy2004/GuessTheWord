@@ -1,0 +1,188 @@
+{% extends "game/base.html" %}
+{% block content %}
+<style>
+  .report-wrap {
+    max-width: 1100px;
+    margin: 18px auto;
+    padding: 18px;
+    color: #e6eef6;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .panel {
+    background: linear-gradient(180deg,#0f1724,#111827);
+    border: 1px solid #22282f;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+    margin-bottom: 16px;
+  }
+
+  .top {
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .top .title { font-size:20px; font-weight:800; color:#f8fafc; }
+  .top .meta { color:#9aa6b2; font-size:14px; }
+
+  .stats {
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .stat {
+    background:#0b1220;
+    border:1px solid #25303a;
+    padding:10px 14px;
+    border-radius:10px;
+    min-width:180px;
+    text-align:center;
+  }
+  .stat .num { font-weight:900; color:#e6eef6; font-size:18px; }
+  .stat .label { color:#95a4b6; font-size:13px; margin-top:4px; }
+
+  .controls {
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:10px;
+  }
+  .input-date, .btn {
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid #27323c;
+    background:#071018;
+    color:#e6eef6;
+  }
+  .btn.primary {
+    background: linear-gradient(180deg,#2563eb,#1d4ed8);
+    border:none;
+    color:white;
+    font-weight:800;
+  }
+  .link-csv { color:#60a5fa; text-decoration:none; font-weight:700; }
+
+  /* table */
+  .table-wrap {
+    overflow:auto;
+  }
+  table.report-table {
+    width:100%;
+    border-collapse:collapse;
+    margin-top:12px;
+    color:#c9d1d9;
+    min-width:820px;
+  }
+  table.report-table th, table.report-table td {
+    padding:12px 14px;
+    border-bottom:1px solid #283034;
+    text-align:left;
+    font-size:14px;
+  }
+  table.report-table th {
+    background:#111420;
+    color:#e6eef6;
+    font-weight:800;
+    font-size:13px;
+  }
+  .col-small { width:120px; }
+  .muted { color:#8b949e; font-size:13px; }
+
+  .badge-win { background:#122b17; color:#3fb950; border:1px solid #2ea043; padding:6px 8px; border-radius:999px; font-weight:800; }
+  .badge-lose { background:#3d2d16; color:#d29922; border:1px solid #bb8009; padding:6px 8px; border-radius:999px; font-weight:800; }
+  .badge-in { background:#1c2740; color:#58a6ff; border:1px solid #1f6feb; padding:6px 8px; border-radius:999px; font-weight:800; }
+
+  @media (max-width:920px) {
+    .stat { min-width: 140px; }
+    table.report-table { font-size:13px; }
+  }
+</style>
+
+<div class="report-wrap">
+  <div class="panel">
+    <div class="top">
+      <div>
+        <div class="title">Daily Report — {{ report_date }}</div>
+        <div class="meta">Overview of games started on this date</div>
+        <div class="stats" style="margin-top:10px;">
+          <div class="stat">
+            <div class="num">{{ users_count }}</div>
+            <div class="label">Users played</div>
+          </div>
+          <div class="stat">
+            <div class="num">{{ games_count }}</div>
+            <div class="label">Games started</div>
+          </div>
+          <div class="stat">
+            <div class="num">{{ correct_guesses }}</div>
+            <div class="label">Correct guesses (wins)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <form method="get" style="display:flex; gap:8px; align-items:center;">
+          <input class="input-date" type="date" name="date" value="{{ report_date }}">
+          <button class="btn primary" type="submit">Get</button>
+        </form>
+
+        <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+          <!-- <a class="link-csv" href="?date={{ report_date }}&export=csv">Export summary CSV</a>
+          <a class="link-csv" href="?date={{ report_date }}&export=csv&detail=1">Export detailed CSV</a> -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="title" style="margin-bottom:10px;">Detailed games</div>
+    <div class="table-wrap">
+      <table class="report-table" role="table">
+        <thead>
+          <tr>
+            <th class="col-small">Game ID</th>
+            <th>User</th>
+            <th>Word</th>
+            <th>Started (date)</th>
+            <th class="col-small">Guesses</th>
+            <th class="col-small">Result</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for g in games %}
+          <tr>
+            <td>#{{ g.id }}</td>
+            <td>{{ g.user.username }}</td>
+            <td><code style="letter-spacing:1px; color:#e6eef6;">{{ g.word.text }}</code></td>
+            <td>
+              <div class="muted">{{ g.started_at|date:"M d, Y" }}</div>
+              <div class="muted">{{ g.started_at|time:"H:i" }}</div>
+            </td>
+            <td>{{ g.guesses_count }}</td>
+            <td>
+              {% if g.win %}
+                <span class="badge-win">WIN</span>
+              {% elif g.finished %}
+                <span class="badge-lose">LOSE</span>
+              {% else %}
+                <span class="badge-in">IN PROGRESS</span>
+              {% endif %}
+            </td>
+            <!-- <td><a class="link-csv" href="{% url 'game:play' g.id %}">Open</a></td> -->
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="muted">No games found for this date.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "game/base.html" %}
+{% block content %}
+<style>
+  .report-wrap {
+    max-width: 980px;
+    margin: 18px auto;
+    padding: 18px;
+    color: #e6eef6;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .panel {
+    background: linear-gradient(180deg,#0f1724,#111827);
+    border: 1px solid #22282f;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+    margin-bottom: 16px;
+  }
+
+  h2 { margin: 0 0 6px; color: #f8fafc; }
+  .subtitle { color:#9aa6b2; margin-bottom:12px; }
+
+  form.user-filter {
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .user-filter input[type="text"] {
+    padding:8px 10px;
+    border-radius:8px;
+    border:1px solid #27323c;
+    background:#071018;
+    color:#e6eef6;
+    min-width:220px;
+  }
+  .user-filter button {
+    padding:8px 12px;
+    border-radius:8px;
+    border:none;
+    background: linear-gradient(180deg,#2563eb,#1d4ed8);
+    color:white;
+    font-weight:800;
+    cursor:pointer;
+  }
+
+  .export-link {
+    color:#60a5fa;
+    text-decoration:none;
+    font-weight:700;
+    margin-left:8px;
+  }
+
+  .table-wrap {
+    overflow:auto;
+    margin-top:10px;
+  }
+  table.user-table {
+    width:100%;
+    border-collapse:collapse;
+    margin-top:8px;
+    color:#c9d1d9;
+  }
+  table.user-table th, table.user-table td {
+    padding:10px 12px;
+    border-bottom:1px solid #283034;
+    text-align:left;
+    font-size:14px;
+  }
+  table.user-table th {
+    background:#111420;
+    color:#e6eef6;
+    font-weight:700;
+    font-size:13px;
+  }
+
+  .muted { color:#8b949e; font-size:13px; }
+  .badge-win { background:#122b17; color:#3fb950; border:1px solid #2ea043; padding:6px 8px; border-radius:999px; font-weight:800; }
+  .badge-lose { background:#3d2d16; color:#d29922; border:1px solid #bb8009; padding:6px 8px; border-radius:999px; font-weight:800; }
+
+  @media (max-width:720px){
+    .user-filter { flex-direction:column; align-items:stretch; gap:8px; }
+    .user-filter input[type="text"] { width:100%; }
+    table.user-table th, table.user-table td { padding:8px; font-size:13px; }
+  }
+</style>
+
+<div class="report-wrap">
+  <div class="panel">
+    <h2>User Report</h2>
+    <div class="subtitle">Lookup a user's games and results</div>
+
+    <form method="get" class="user-filter">
+      <input type="text" name="username" placeholder="Enter username" value="{{ username|default:'' }}" />
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button type="submit">Get User Report</button>
+        {% if username %}
+          <a class="export-link" href="?username={{ username }}&export=csv">Export CSV</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% if report %}
+      <div class="table-wrap">
+        <table class="user-table" role="table">
+          <thead>
+            <tr>
+              <th>Game ID</th>
+              <th>Date</th>
+              <th>Words Tried</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in report %}
+            <tr>
+              <td>#{{ r.game_id }}</td>
+              <td class="muted">{{ r.date }}</td>
+              <td>{{ r.words_tried }}</td>
+              <td>
+                {% if r.correct %}
+                  <span class="badge-win">WIN</span>
+                {% else %}
+                  <span class="badge-lose">LOSE</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

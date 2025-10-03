@@ -1,0 +1,172 @@
+{% extends "game/base.html" %}
+{% block content %}
+<style>
+  body {
+    background: #0d1117; /* GitHub dark style */
+    color: #e6edf3;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* Dashboard container */
+  .dashboard {
+    max-width: 960px;
+    margin: 24px auto;
+    padding: 18px;
+  }
+
+  .top-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    background: #161b22;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    border: 1px solid #30363d;
+  }
+
+  .stats {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .stat-pill {
+    background: #21262d;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #f0f6fc;
+    min-width: 140px;
+    text-align: center;
+  }
+
+  .start-btn {
+    display: inline-block;
+    background: linear-gradient(180deg,#238636,#196c2e);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 6px 12px rgba(35,134,54,0.3);
+    transition: transform 0.15s ease;
+  }
+  .start-btn:hover { transform: translateY(-2px); background: #2ea043; }
+
+  h3 { margin-top: 20px; margin-bottom: 10px; color: #f0f6fc; }
+
+  /* Recent games table */
+  .games-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #c9d1d9;
+  }
+  .games-table th, .games-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #30363d;
+    text-align: left;
+  }
+  .games-table th {
+    background: #1c2128;
+    font-weight: 700;
+    color: #e6edf3;
+    font-size: 13px;
+  }
+
+  .badge {
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:999px;
+    font-weight:700;
+    font-size:12px;
+  }
+  .badge-win { background:#122b17; color:#3fb950; border:1px solid #2ea043; }
+  .badge-lose { background:#3d2d16; color:#d29922; border:1px solid #bb8009; }
+  .badge-pending { background:#1c2740; color:#58a6ff; border:1px solid #1f6feb; }
+
+  .small-muted { color: #8b949e; font-size:13px; }
+
+  @media (max-width:720px){
+    .top-row { flex-direction: column; align-items: stretch; }
+    .stat-pill { min-width: unset; width:100%; text-align:center; }
+    .start-btn { width:100%; text-align:center; }
+    .games-table th, .games-table td { padding:8px; font-size:13px; }
+  }
+</style>
+
+<div class="dashboard">
+  <div class="top-row">
+    <div class="card stats">
+      <div>
+        <div class="small-muted">Games played today</div>
+        <div class="stat-pill">{{ today_count }} / 3</div>
+      </div>
+    </div>
+
+    <div>
+      <a class="start-btn" href="{% url 'game:start_game' %}">Start New Game</a>
+    </div>
+  </div>
+
+  <h3>Recent Games</h3>
+
+  <div class="card" style="padding:8px 12px;">
+    <table class="games-table" role="table">
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Word</th>
+          <th>Started</th>
+          <th>Finished</th>
+          <th>Result</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in recent %}
+        <tr>
+          <td>#{{ g.id }}</td>
+          <td><code style="font-weight:700; letter-spacing:1px; color:#e6edf3;">{{ g.word.text }}</code></td>
+          <td>
+            <div class="small-muted">{{ g.started_at|date:"M d, Y" }}</div>
+            <div class="small-muted">{{ g.started_at|time:"H:i" }}</div>
+          </td>
+          <td>
+            {% if g.finished %}
+              <span class="small-muted">Yes</span>
+            {% else %}
+              <span class="small-muted">No</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if g.win %}
+              <span class="badge badge-win">WIN</span>
+            {% elif g.finished %}
+              <span class="badge badge-lose">LOSE</span>
+            {% else %}
+              <span class="badge badge-pending">IN PROGRESS</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'game:play' g.id %}" style="color:#58a6ff; font-weight:600; text-decoration:none;">Open</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="small-muted">No recent games.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
