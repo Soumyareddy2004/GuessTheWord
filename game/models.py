@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.core.validators import RegexValidator
 
 class Word(models.Model):
-    text = models.CharField(max_length=5, unique=True)  # store uppercase 5-letter words
+    text = models.CharField(max_length=5, unique=True) 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -27,7 +27,6 @@ class Guess(models.Model):
     text = models.CharField(max_length=5, validators=[
         RegexValidator(regex=r'^[A-Z]{5}$', message='Guess must be 5 uppercase letters.')
     ])
-    # store per-letter status as a short JSON: e.g. ["green","grey","orange","grey","grey"]
     status = models.JSONField(default=list)
     attempted_at = models.DateTimeField(auto_now_add=True)
 
