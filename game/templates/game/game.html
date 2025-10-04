@@ -166,6 +166,9 @@
     </div>
 
     <script>
+       if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+  }
       document.getElementById("modalOkBtn").onclick = function() {
         window.location.href = "{% url 'game:dashboard' %}";
       }
