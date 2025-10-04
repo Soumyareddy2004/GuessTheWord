@@ -120,30 +120,31 @@ def play_game(request, game_id):
         status = evaluate_guess(secret, guess_text)
         Guess.objects.create(game=game, text=guess_text, status=status)
         game.guesses_used += 1
+
         # check win
         if guess_text == secret:
             game.win = True
             game.finished = True
             game.save()
-            messages.success(request, "Congratulations! You guessed the word.")
-            return redirect('game:dashboard')
+            # don't redirect: fall through to render page so modal shows
         else:
             if game.guesses_used >= game.guesses_allowed:
                 game.finished = True
                 game.save()
-                messages.info(request, f'Better luck next time! The word was {secret}.')
-                return redirect('game:dashboard')
-            game.save()
-            return redirect('game:play', game_id=game.id)
+                # don't redirect: fall through to render page so modal shows
+            else:
+                game.save()
+                return redirect('game:play', game_id=game.id)
 
-    # build paired display data: list of list of (char, status)
+    # After POST processing (or for GET) build the guesses display and render.
+    # This ensures that when the game becomes finished we render the same page
+    # so the modal pops up immediately with OK button to dashboard.
     guesses = list(game.guesses.order_by('attempted_at'))
     guesses_display = []
     for g in guesses:
-        # g.text is string length 5, g.status is list length 5
         pairs = []
         for idx, ch in enumerate(g.text):
-            st = None
+            st = 'grey'
             try:
                 st = g.status[idx]
             except Exception:
@@ -153,9 +154,10 @@ def play_game(request, game_id):
 
     return render(request, 'game/game.html', {
         'game': game,
-        'guesses': guesses,            # kept in case you need it
+        'guesses': guesses,
         'guesses_display': guesses_display,
     })
+
 
 # --- Admin reports ---
 def is_admin(user):
